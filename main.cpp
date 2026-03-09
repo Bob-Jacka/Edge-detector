@@ -4,6 +4,8 @@
 #include <QtUiTools/QUiLoader>
 
 #ifdef DYNAMIC
+#error("Need to change invocation")
+
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
 
@@ -52,7 +54,7 @@ protected:
 
     Ui_MainWindow();
 
-private:
+protected:
     QWidget *centralwidget;
     QWidget *verticalLayoutWidget;
     QVBoxLayout *buttons;
@@ -61,11 +63,15 @@ private:
     QPushButton *stop_btn;
     QPushButton *settings_btn;
     QFrame *frame;
-    QVideoWidget *widget;
+    QVideoWidget *video_wid; //add your video here
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
-    void setupUi(QMainWindow *MainWindow) {
+    void clear_ui() {
+        //TODO realize
+    }
+
+    void setup_ui(QMainWindow *MainWindow) {
         if (MainWindow->objectName().isEmpty()) {
             MainWindow->setObjectName("MainWindow");
         }
@@ -107,9 +113,9 @@ private:
         frame->setFrameShadow(QFrame::Shadow::Raised);
         frame->setLineWidth(5);
         frame->setMidLineWidth(0);
-        widget = new QVideoWidget(frame);
-        widget->setObjectName("widget");
-        widget->setGeometry(QRect(10, 10, 721, 451));
+        video_wid = new QVideoWidget(frame);
+        video_wid->setObjectName("widget");
+        video_wid->setGeometry(QRect(10, 10, 721, 451));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
@@ -122,7 +128,7 @@ private:
         retranslateUi(MainWindow);
 
         QMetaObject::connectSlotsByName(MainWindow);
-    } // setupUi
+    } // setup_ui
 
     void retranslateUi(QMainWindow *MainWindow) const {
         MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
@@ -148,11 +154,11 @@ namespace Ui {
 
 //Realization:
 Ui_MainWindow::Ui_MainWindow() {
-    //
+    setup_ui(new QMainWindow());
 }
 
 Ui_MainWindow::~Ui_MainWindow() {
-    //
+    clear_ui();
 }
 
 Ui::MainWindow::MainWindow() : Ui_MainWindow() {
@@ -174,3 +180,31 @@ QT_END_NAMESPACE
 
 #endif // EDGE_DETECTORJHRQTD_H
 #endif
+
+#include <opencv4/opencv2/highgui.hpp>
+#include <opencv4/opencv2/imgproc/imgproc.hpp>
+
+import Libio;
+
+int main() {
+    auto main_window = Ui::MainWindow::get_instance();
+    if constexpr (1) { //for test execution
+        using namespace cv;
+        libio::output::print("Enter video name to proceed: ");
+        std::string video_name = libio::input::user_input();
+        VideoCapture cap(video_name);
+        if (!cap.isOpened()) {
+            libio::output::println("Cannot open the video file.");
+            return -1;
+        }
+        double fps = cap.get(CV_CAP_PROP_FPS);
+        while(1) {
+            Mat frame;
+            // Mat object is a basic image container. frame is an object of Mat.
+            if (!cap.read(frame)) {
+                libio::output::println("Cannot read the video file.");
+                break;
+            }
+        }
+    }
+}
