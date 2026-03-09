@@ -1,19 +1,20 @@
 cmake_minimum_required(VERSION 3.31)
 project(Edge_detector)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 include(FetchContent)
 
-FetchContent_Declare(
-        opencv
-        GIT_REPOSITORY https://github.com/opencv/opencv
-        GIT_TAG 4.13.0
-)
-
 if (WIN32)
+    message("Declare opencv dependency")
+    FetchContent_Declare(
+            opencv
+            GIT_REPOSITORY https://github.com/opencv/opencv
+            GIT_TAG 4.13.0
+    )
+
     message("Using windows aqtinstaller")
     set(CMAKE_PREFIX_PATH "C:/aqtinstaller/Qt/6.8.0/mingw_64")
 endif ()
