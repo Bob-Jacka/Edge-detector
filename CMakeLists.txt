@@ -1,24 +1,29 @@
 cmake_minimum_required(VERSION 3.31)
 project(Edge_detector)
 
+add_compile_options(-Wall -Wextra)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
+#set(OpenCV_DIR "C:/tools/opencv/sources")
 include(FetchContent)
 
-if (WIN32)
+if (APPLE)
     message("Declare opencv dependency")
     FetchContent_Declare(
             opencv
             GIT_REPOSITORY https://github.com/opencv/opencv
             GIT_TAG 4.13.0
     )
-
-    message("Using windows aqtinstaller")
-    set(CMAKE_PREFIX_PATH "C:/aqtinstaller/Qt/6.8.0/mingw_64")
 endif ()
 
+if (WIN32)
+    message("Using windows aqtinstaller")
+    set(CMAKE_PREFIX_PATH "C:/aqtinstaller/Qt/6.8.0/mingw_64") #TODO Look at this line in linux
+endif ()
+
+find_package(OpenCV REQUIRED)
 find_package(Qt6 COMPONENTS
         Core
         Gui
@@ -27,6 +32,7 @@ find_package(Qt6 COMPONENTS
         REQUIRED
 )
 
+include_directories(${OpenCV_INCLUDE_DIRS})
 add_executable(Edge_detector
         main.cpp
         core/modulus/libio.cppm
@@ -54,7 +60,7 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
                 "${QT_INSTALL_PATH}/plugins/platforms/qwindows${DEBUG_SUFFIX}.dll"
                 "$<TARGET_FILE_DIR:${PROJECT_NAME}>/plugins/platforms/")
     endif ()
-    foreach (QT_LIB Core Gui Widgets)
+    foreach (QT_LIB Core Gui Widgets Multimedia)
         add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
                 "${QT_INSTALL_PATH}/bin/Qt6${QT_LIB}${DEBUG_SUFFIX}.dll"
@@ -62,13 +68,18 @@ if (WIN32 AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     endforeach (QT_LIB)
 endif ()
 
-FetchContent_MakeAvailable(opencv)
+if (APPLE)
+    FetchContent_MakeAvailable(opencv)
+endif ()
+
+target_include_directories(Edge_detector PRIVATE ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(Edge_detector
+        PRIVATE
         Qt::Core
         Qt::Gui
         Qt::Widgets
         Qt::Multimedia
-        opencv
+        ${OpenCV_LIBS}
 )
 
 target_sources(Edge_detector

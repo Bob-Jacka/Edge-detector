@@ -1,9 +1,11 @@
-#include <QApplication>
 #include <QFile>
-#include <QMainWindow>
 #include <QtUiTools/QUiLoader>
 
+
 #ifdef DYNAMIC
+#include <QMainWindow>
+#include <QApplication>
+
 #error("Need to change invocation")
 
 int main(int argc, char *argv[]) {
@@ -45,110 +47,128 @@ int main(int argc, char *argv[]) {
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
+
+// #include "cmake-build-debug/_deps/opencv-src/"
+// #include "cmake-build-debug/_deps/opencv-src/modules/core/include/opencv2/core/mat.hpp"
+// #include "cmake-build-debug/_deps/opencv-src/modules/videoio/include/opencv2/videoio.hpp"
+// #include "cmake-build-debug/_deps/opencv-src/modules/videoio/include/opencv2/videoio/legacy/constants_c.h"
+
+import Libio;
+
 QT_BEGIN_NAMESPACE
 
 class Ui_MainWindow {
+    protected:
+        ~Ui_MainWindow();
 
-protected:
-    ~Ui_MainWindow();
+        Ui_MainWindow();
 
-    Ui_MainWindow();
+    protected:
+        QWidget *     centralwidget        = nullptr;
+        QWidget *     verticalLayoutWidget = nullptr;
+        QVBoxLayout * buttons              = nullptr;
+        QPushButton * play_vid_btn         = nullptr;
+        QPushButton * detect_btn           = nullptr;
+        QPushButton * stop_btn             = nullptr;
+        QPushButton * settings_btn         = nullptr;
+        QFrame *      frame                = nullptr;
+        QVideoWidget *video_wid            = nullptr; //add your video here
+        QMenuBar *    menubar              = nullptr;
+        QStatusBar *  statusbar            = nullptr;
 
-protected:
-    QWidget *centralwidget;
-    QWidget *verticalLayoutWidget;
-    QVBoxLayout *buttons;
-    QPushButton *play_vid_btn;
-    QPushButton *detect_btn;
-    QPushButton *stop_btn;
-    QPushButton *settings_btn;
-    QFrame *frame;
-    QVideoWidget *video_wid; //add your video here
-    QMenuBar *menubar;
-    QStatusBar *statusbar;
-
-    void clear_ui() {
-        //TODO realize
-    }
-
-    void setup_ui(QMainWindow *MainWindow) {
-        if (MainWindow->objectName().isEmpty()) {
-            MainWindow->setObjectName("MainWindow");
+    private:
+        void clear_ui() const {
+            delete buttons;
+            delete play_vid_btn;
+            delete detect_btn;
+            delete stop_btn;
+            delete settings_btn;
+            delete video_wid;
+            delete menubar;
+            delete statusbar;
+            delete verticalLayoutWidget;
+            delete frame;
+            delete centralwidget;
         }
-        MainWindow->resize(960, 580);
-        centralwidget = new QWidget(MainWindow);
-        centralwidget->setObjectName("centralwidget");
-        verticalLayoutWidget = new QWidget(centralwidget);
-        verticalLayoutWidget->setObjectName("verticalLayoutWidget");
-        verticalLayoutWidget->setGeometry(QRect(780, 19, 160, 227));
-        buttons = new QVBoxLayout(verticalLayoutWidget);
-        buttons->setSpacing(0);
-        buttons->setObjectName("buttons");
-        buttons->setSizeConstraint(QLayout::SizeConstraint::SetDefaultConstraint);
-        buttons->setContentsMargins(0, 0, 0, 0);
-        play_vid_btn = new QPushButton(verticalLayoutWidget);
-        play_vid_btn->setObjectName("play_vid_btn");
 
-        buttons->addWidget(play_vid_btn);
+        void setup_ui(QMainWindow *MainWindow) {
+            if (MainWindow->objectName().isEmpty()) {
+                MainWindow->setObjectName("MainWindow");
+            }
+            MainWindow->resize(960, 580);
+            centralwidget = new QWidget(MainWindow);
+            centralwidget->setObjectName("centralwidget");
+            verticalLayoutWidget = new QWidget(centralwidget);
+            verticalLayoutWidget->setObjectName("verticalLayoutWidget");
+            verticalLayoutWidget->setGeometry(QRect(780, 19, 160, 227));
+            buttons = new QVBoxLayout(verticalLayoutWidget);
+            buttons->setSpacing(0);
+            buttons->setObjectName("buttons");
+            buttons->setSizeConstraint(QLayout::SizeConstraint::SetDefaultConstraint);
+            buttons->setContentsMargins(0, 0, 0, 0);
+            play_vid_btn = new QPushButton(verticalLayoutWidget);
+            play_vid_btn->setObjectName("play_vid_btn");
 
-        detect_btn = new QPushButton(verticalLayoutWidget);
-        detect_btn->setObjectName("detect_btn");
+            buttons->addWidget(play_vid_btn);
 
-        buttons->addWidget(detect_btn);
+            detect_btn = new QPushButton(verticalLayoutWidget);
+            detect_btn->setObjectName("detect_btn");
 
-        stop_btn = new QPushButton(verticalLayoutWidget);
-        stop_btn->setObjectName("stop_btn");
+            buttons->addWidget(detect_btn);
 
-        buttons->addWidget(stop_btn);
+            stop_btn = new QPushButton(verticalLayoutWidget);
+            stop_btn->setObjectName("stop_btn");
 
-        settings_btn = new QPushButton(verticalLayoutWidget);
-        settings_btn->setObjectName("settings_btn");
+            buttons->addWidget(stop_btn);
 
-        buttons->addWidget(settings_btn);
+            settings_btn = new QPushButton(verticalLayoutWidget);
+            settings_btn->setObjectName("settings_btn");
 
-        frame = new QFrame(centralwidget);
-        frame->setObjectName("frame");
-        frame->setGeometry(QRect(20, 20, 741, 471));
-        frame->setFrameShape(QFrame::Shape::Box);
-        frame->setFrameShadow(QFrame::Shadow::Raised);
-        frame->setLineWidth(5);
-        frame->setMidLineWidth(0);
-        video_wid = new QVideoWidget(frame);
-        video_wid->setObjectName("widget");
-        video_wid->setGeometry(QRect(10, 10, 721, 451));
-        MainWindow->setCentralWidget(centralwidget);
-        menubar = new QMenuBar(MainWindow);
-        menubar->setObjectName("menubar");
-        menubar->setGeometry(QRect(0, 0, 964, 22));
-        MainWindow->setMenuBar(menubar);
-        statusbar = new QStatusBar(MainWindow);
-        statusbar->setObjectName("statusbar");
-        MainWindow->setStatusBar(statusbar);
+            buttons->addWidget(settings_btn);
 
-        retranslateUi(MainWindow);
+            frame = new QFrame(centralwidget);
+            frame->setObjectName("frame");
+            frame->setGeometry(QRect(20, 20, 741, 471));
+            frame->setFrameShape(QFrame::Shape::Box);
+            frame->setFrameShadow(QFrame::Shadow::Raised);
+            frame->setLineWidth(5);
+            frame->setMidLineWidth(0);
+            video_wid = new QVideoWidget(frame);
+            video_wid->setObjectName("widget");
+            video_wid->setGeometry(QRect(10, 10, 721, 451));
+            MainWindow->setCentralWidget(centralwidget);
+            menubar = new QMenuBar(MainWindow);
+            menubar->setObjectName("menubar");
+            menubar->setGeometry(QRect(0, 0, 964, 22));
+            MainWindow->setMenuBar(menubar);
+            statusbar = new QStatusBar(MainWindow);
+            statusbar->setObjectName("statusbar");
+            MainWindow->setStatusBar(statusbar);
 
-        QMetaObject::connectSlotsByName(MainWindow);
-    } // setup_ui
+            retranslateUi(MainWindow);
 
-    void retranslateUi(QMainWindow *MainWindow) const {
-        MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
-        play_vid_btn->setText(QCoreApplication::translate("MainWindow", "Play video", nullptr));
-        detect_btn->setText(QCoreApplication::translate("MainWindow", "Detect edges", nullptr));
-        stop_btn->setText(QCoreApplication::translate("MainWindow", "Stop video", nullptr));
-        settings_btn->setText(QCoreApplication::translate("MainWindow", "Settings", nullptr));
-    } // retranslateUi
+            QMetaObject::connectSlotsByName(MainWindow);
+        } // setup_ui
+
+        void retranslateUi(QMainWindow *MainWindow) const {
+            MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
+            play_vid_btn->setText(QCoreApplication::translate("MainWindow", "Play video", nullptr));
+            detect_btn->setText(QCoreApplication::translate("MainWindow", "Detect edges", nullptr));
+            stop_btn->setText(QCoreApplication::translate("MainWindow", "Stop video", nullptr));
+            settings_btn->setText(QCoreApplication::translate("MainWindow", "Settings", nullptr));
+        } // retranslateUi
 };
 
 namespace Ui {
     class MainWindow : public Ui_MainWindow {
-    private:
         MainWindow();
 
         static MainWindow *instance;
-    public:
-        ~MainWindow();
 
-        static MainWindow *get_instance();
+        public:
+            ~MainWindow();
+
+            static MainWindow *get_instance();
     };
 } // namespace Ui
 
@@ -162,7 +182,6 @@ Ui_MainWindow::~Ui_MainWindow() {
 }
 
 Ui::MainWindow::MainWindow() : Ui_MainWindow() {
-    //
 }
 
 Ui::MainWindow::~MainWindow() {
@@ -181,24 +200,22 @@ QT_END_NAMESPACE
 #endif // EDGE_DETECTORJHRQTD_H
 #endif
 
-#include <opencv4/opencv2/highgui.hpp>
-#include <opencv4/opencv2/imgproc/imgproc.hpp>
-
-import Libio;
-
 int main() {
     auto main_window = Ui::MainWindow::get_instance();
-    if constexpr (1) { //for test execution
+    if constexpr (true) {
+        //for test execution
         using namespace cv;
         libio::output::print("Enter video name to proceed: ");
-        std::string video_name = libio::input::user_input();
+        std::string  video_name = libio::input::user_input();
         VideoCapture cap(video_name);
         if (!cap.isOpened()) {
             libio::output::println("Cannot open the video file.");
+            // throw; //it can be an error
             return -1;
         }
-        double fps = cap.get(CV_CAP_PROP_FPS);
-        while(1) {
+        const double fps = cap.get(CV_CAP_PROP_FPS);
+        libio::output::println("Video frames per second: " + std::to_string(fps));
+        while (true) {
             Mat frame;
             // Mat object is a basic image container. frame is an object of Mat.
             if (!cap.read(frame)) {
