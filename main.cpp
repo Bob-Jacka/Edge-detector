@@ -66,19 +66,32 @@ void detect_edges_sobel(Mat img) {
     Mat gray;
     cvtColor(img, gray, COLOR_BGR2GRAY);
 
-    // 3. Blur to reduce noise in image
+    // 3. Blur to reduce noise
     Mat blurred;
     GaussianBlur(gray, blurred, Size(3, 3), 0);
 
-    // 4. Sobel X and Sobel Y
+    // 4. Sobel X and Sobel Y (signed 16-bit)
     Mat gradX, gradY;
     Sobel(blurred, gradX, CV_16S, 1, 0, 3);
     Sobel(blurred, gradY, CV_16S, 0, 1, 3);
 
-    // 5. Convert to absolute values
-    Mat absGradX, absGradY;
-    convertScaleAbs(gradX, absGradX);
-    convertScaleAbs(gradY, absGradY);
+    // 5. Convert to float for magnitude calculation
+    Mat gradXf, gradYf;
+    gradX.convertTo(gradXf, CV_32F);
+    gradY.convertTo(gradYf, CV_32F);
+
+    // 6. Compute true gradient magnitude
+    Mat mag;
+    magnitude(gradXf, gradYf, mag);
+
+    // 7. Convert to 8-bit for display
+    Mat sobel;
+    mag.convertTo(sobel, CV_8U);
+
+    // 8. Show result
+    imshow("Sobel Magnitude", sobel);
+    waitKey(0);
+    return 0;
 }
 
 /**
