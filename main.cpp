@@ -1,6 +1,6 @@
 #include <QFile>
+#include <string>
 #include <QtUiTools/QUiLoader>
-
 
 #ifdef DYNAMIC
 #include <QMainWindow>
@@ -56,6 +56,55 @@ int main(int argc, char *argv[]) {
 import Libio;
 
 QT_BEGIN_NAMESPACE
+
+void detect_edges_sobel(Mat img) {
+    if (img.empty()) {
+        return -1;
+    }
+
+    // 2. Convert to grayscale
+    Mat gray;
+    cvtColor(img, gray, COLOR_BGR2GRAY);
+
+    // 3. Blur to reduce noise in image
+    Mat blurred;
+    GaussianBlur(gray, blurred, Size(3, 3), 0);
+
+    // 4. Sobel X and Sobel Y
+    Mat gradX, gradY;
+    Sobel(blurred, gradX, CV_16S, 1, 0, 3);
+    Sobel(blurred, gradY, CV_16S, 0, 1, 3);
+
+    // 5. Convert to absolute values
+    Mat absGradX, absGradY;
+    convertScaleAbs(gradX, absGradX);
+    convertScaleAbs(gradY, absGradY);
+}
+
+/**
+ * Draw bounding box with label
+ * @param frame current frame
+ * @param bbox
+ * @param ok is tracking ok
+ */
+void draw_bb(cv::Mat &frame, const cv::Rect &bbox, const bool ok) {
+    if (ok) {
+        // draw green box
+        cv::rectangle(frame, bbox, cv::Scalar(0, 255, 0), 2);
+
+        // draw "Tracking" above the box
+        cv::putText(frame, "Tracking",
+                    cv::Point(bbox.x, bbox.y - 10),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.7,
+                    cv::Scalar(0, 255, 0), 2);
+    } else {
+        // draw "Lost" above the last known box
+        cv::putText(frame, "Lost",
+                    cv::Point(bbox.x, bbox.y - 10),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.7,
+                    cv::Scalar(0, 0, 255), 2);
+    }
+}
 
 class Ui_MainWindow {
     protected:
