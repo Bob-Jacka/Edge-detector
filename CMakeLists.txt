@@ -11,7 +11,6 @@ set(CMAKE_AUTOUIC ON)
 include(FetchContent)
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
-
 set(CMAKE_DEFAULT_BUILD_TYPE "Debug" CACHE STRING "" FORCE)
 
 message("Available configs: ${CMAKE_CONFIGURATION_TYPES}")
@@ -45,9 +44,9 @@ if (WIN32)
             GIT_REPOSITORY https://github.com/qt/qtmultimedia
             GIT_TAG v6.10.2
     )
-endif()
+endif ()
 
-if (APPLE)
+if (UNIX)
     message("Using system level libraries")
     find_package(OpenCV REQUIRED)
     find_package(Qt6 COMPONENTS
@@ -55,10 +54,12 @@ if (APPLE)
             Gui
             Widgets
             Multimedia
+            MultimediaWidgets
+            UiTools # for dynamic loading
             REQUIRED
     )
     include_directories(${OpenCV_INCLUDE_DIRS})
-endif()
+endif ()
 
 add_executable(Edge_detector
         main.cpp
@@ -71,15 +72,34 @@ if (WIN32)
     FetchContent_MakeAvailable(qtbase)
     FetchContent_MakeAvailable(qtshadertools)
     FetchContent_MakeAvailable(qtmultimedia)
-endif()
+endif ()
 
-target_link_libraries(Edge_detector
-        PRIVATE
-        qtbase
-        qtshadertools
-        qtmultimedia
-        opencv
-)
+if (UNIX)
+    message("Using UNIX target link")
+    target_link_libraries(Edge_detector
+            PRIVATE
+            Qt6::Core
+            Qt6::Widgets
+            Qt6::Multimedia
+            Qt6::MultimediaWidgets
+            Qt6::UiTools # for dynamic loading
+
+            opencv_core
+            opencv_imgproc
+            opencv_highgui
+    )
+endif ()
+
+if (WIN32)
+    message("Using Windows target link")
+    target_link_libraries(Edge_detector
+            PRIVATE
+            qtbase
+            qtshadertools
+            qtmultimedia
+            opencv
+    )
+endif ()
 
 target_sources(Edge_detector
         PUBLIC

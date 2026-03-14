@@ -811,7 +811,7 @@ export void print_one_element(const int *array, const int i) {
             if (auto file = std::ifstream(file_name); file.is_open()) {
                 return std::make_tuple<std::ifstream, bool>(std::move(file), true);
             } else {
-                return std::make_tuple<std::ifstream, bool>(std::move(nullptr), false);
+                throw;
             }
         }
 
