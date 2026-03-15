@@ -31,7 +31,7 @@
       <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
      </property>
      <item>
-      <widget class="QPushButton" name="open_vid">
+      <widget class="QPushButton" name="open_vid_btn">
        <property name="text">
         <string>Open video</string>
        </property>
@@ -48,6 +48,13 @@
       <widget class="QPushButton" name="detect_btn">
        <property name="text">
         <string>Detect edges</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="track_btn">
+       <property name="text">
+        <string>Track object</string>
        </property>
       </widget>
      </item>
@@ -88,7 +95,7 @@
     <property name="midLineWidth">
      <number>0</number>
     </property>
-    <widget class="QVideoWidget" name="widget" native="true">
+    <widget class="QVideoWidget" name="video_wid" native="true">
      <property name="geometry">
       <rect>
        <x>10</x>

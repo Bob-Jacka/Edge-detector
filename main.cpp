@@ -9,12 +9,14 @@
 #include <QVideoWidget>
 #include <QMediaPlayer>
 #include <QWindow>
+#include <QMessageBox>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/tracking.hpp>
 
 #ifdef WIN32
 constexpr auto path_to_img =  "";
@@ -24,7 +26,14 @@ constexpr auto path_to_img = "/home/kirill/Downloads/Edge-detector/edge_detector
 #error("No specified OS")
 #endif
 
-namespace {
+import Libio;
+
+namespace Img_detect {
+
+    struct Cv_entity {
+        std::string file_name;
+    };
+
     /**
      * Detect edges with Sobel algo
      * @param img image to detect edges on
@@ -93,6 +102,13 @@ namespace {
     }
 
     /**
+     * Track object with tracker to track object within video
+     */
+    void track_object() {
+//        auto tracker = cv::TrackerCSRT::create();
+    }
+
+    /**
      * Can be used as a coroutine. Start main cycle of the opencv.
      * @param file_name name of the file to analyze
      */
@@ -102,60 +118,80 @@ namespace {
             img = cv::imread(file_name, cv::COLOR_BGR2GRAY);
         }
     }
+}
 
-    extern "C" {
-    int main(int argc, char *argv[]) {
-        QApplication a(argc, argv);
+int main(int argc, char *argv[]) {
+    QApplication a(argc, argv);
 
-        QUiLoader loader;
-        QFile file(path_to_img); //absolute path to file with ui
-        auto res = file.open(QFile::ReadOnly);
-        if (res) {
-            //
+    QUiLoader loader;
+    if constexpr (1) {
+        auto widgets = loader.availableWidgets();
+        for (auto elem: widgets) {
+            libio::output::println(elem);
         }
-        file.close();
+    }
+    QFile file(path_to_img); //absolute path to file with ui
+    auto res = file.open(QFile::ReadOnly);
+    if (not res) {
+        QMessageBox(QMessageBox::Icon::Critical, "Error", "An error occurred during loading UI file").exec();
+    }
+    file.close();
 
-        QWidget *main_window = dynamic_cast<QMainWindow *>(loader.load(&file));
-        auto player = std::make_unique<QMediaPlayer>(); //video or other media player
-        auto vid_wid = main_window->findChild<QVideoWidget *>();
-        auto open_vid = main_window->findChild<QPushButton *>();
-        auto play_vid = main_window->findChild<QPushButton *>("Play video");
-        auto detect_vid = main_window->findChild<QPushButton *>("Detect edges");
-        auto stop_vid = main_window->findChild<QPushButton *>("Stop video");
-        auto settings_vid = main_window->findChild<QPushButton *>("Settings");
+    QWidget *main_window = dynamic_cast<QMainWindow *>(loader.load(&file));
+    auto player = std::make_unique<QMediaPlayer>(); //video or other media player
+    auto vid_wid = main_window->findChild<QVideoWidget *>("video_wid");
+    auto open_vid = main_window->findChild<QPushButton *>("open_vid_btn");
+    auto play_vid = main_window->findChild<QPushButton *>("play_vid_btn");
+    auto detect_vid = main_window->findChild<QPushButton *>("detect_btn");
+    auto track_vid = main_window->findChild<QPushButton *>("track_btn");
+    auto stop_vid = main_window->findChild<QPushButton *>("stop_btn");
+    auto settings_vid = main_window->findChild<QPushButton *>("settings_btn");
 
-        QPushButton::connect(open_vid, &QPushButton::clicked, [&main_window, &player, &vid_wid] {
-            QString filename = QFileDialog::getExistingDirectory(main_window, "Choose File");
-            if (filename.isEmpty()) {
-                return; //it can be an exception
-            }
-            player->setSource(QUrl(filename));
-            player->setVideoOutput(vid_wid);
-        });
-
-        QPushButton::connect(play_vid, &QPushButton::clicked, [&player] {
-            player->play();
-        });
-
-        QPushButton::connect(stop_vid, &QPushButton::clicked, [&player] {
-            player->stop();
-        });
-
-        QPushButton::connect(detect_vid, &QPushButton::clicked, [&player] {
-//            detect_edges_sobel();
-        });
-
-        QPushButton::connect(settings_vid, &QPushButton::clicked, [] {
-            auto settings_page = new QWindow();
-            sleep(1000);
-            delete settings_page;
-        });
-
-        if (main_window) {
-            main_window->show();
+    QPushButton::connect(open_vid, &QPushButton::clicked, [&main_window, &player, &vid_wid] {
+        QString filename = QFileDialog::getOpenFileName(main_window, "Choose File");
+        if (filename.isEmpty()) {
+            return; //it can be an exception
         }
+        player->setSource(QUrl(filename));
+        player->setVideoOutput(vid_wid);
 
-        return QApplication::exec();
+        if (not player->hasVideo()) {
+            QMessageBox(QMessageBox::Icon::Warning, "Error", "An error occurred during video insert").exec();
+        }
+    });
+
+    QPushButton::connect(play_vid, &QPushButton::clicked, [&player, &vid_wid] {
+        player->play();
+        vid_wid->show();
+        if (not player->isPlaying()) {
+            QMessageBox(QMessageBox::Icon::Warning, "Error", "An error occurred during playing video").exec();
+        }
+    });
+
+    QPushButton::connect(stop_vid, &QPushButton::clicked, [&player] {
+        player->stop();
+        if (player->mediaStatus() != QMediaPlayer::StalledMedia) {
+            QMessageBox(QMessageBox::Icon::Warning, "Error", "Video is not stopped").exec();
+        }
+    });
+
+    QPushButton::connect(detect_vid, &QPushButton::clicked, [&player] {
+//            Img_detect::detect_edges_sobel();
+    });
+
+    QPushButton::connect(track_vid, &QPushButton::clicked, [&player] {
+//
+    });
+
+    QPushButton::connect(settings_vid, &QPushButton::clicked, [] {
+        auto settings_page = new QWindow();
+        sleep(1000);
+        delete settings_page;
+    });
+
+    if (main_window) {
+        main_window->show();
     }
-    }
+
+    return QApplication::exec();
 }
