@@ -2,7 +2,7 @@ module;
 
 /**
  Custom library for actions in Netology C++ course and later for more serious projects.
- Version - 1.24.5
+ Version - 1.24.6
  This library could be a module, but yes, later rewritten to module with LIBIO_EXPERIMENTAL functions.
  Some kind of Boost library for poor people.
 
@@ -16,6 +16,7 @@ module;
 */
 
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <regex>
@@ -32,7 +33,6 @@ module;
 #ifdef LIBIO_EXPERIMENTAL ///define functions and include other libraries if LIBIO_EXPERIMENTAL tag is defined
 #pragma message("Using experimental features")
 
-#include <filesystem>
 #include <cmath>
 #incldue <vector>
 #include <iterator>
@@ -501,34 +501,6 @@ export void print_one_element(const int *array, const int i) {
             return str.substr(first, last - first + 1);
         }
 
-        template<typename T>
-        T convert_to_t(const std::string &source);
-
-        template<>
-        int convert_to_t(const std::string &source) {
-            try {
-                return std::stoi(source);
-            } catch (const std::exception &e) {
-                throw std::runtime_error("Cannot convert string to '" + source + "' in int " + e.what());
-            }
-        }
-
-        template<>
-        std::string convert_to_t(const std::string &source) {
-            return source.empty() ? "0" : source;
-        }
-
-        template<>
-        bool convert_to_t(const std::string &source) {
-            if (source == "false" || source == "False") {
-                return false;
-            }
-            if (source == "true" || source == "True") {
-                return true;
-            }
-            return false;
-        }
-
 #ifdef LIBIO_EXPERIMENTAL
     /**
      * Replace string with another string
@@ -748,12 +720,32 @@ export void print_one_element(const int *array, const int i) {
         /**
          * Creates file for read and write.
          * @param fileName name of the file, create if not exists.
-         * @return file handler.
+         * @return file handler or nullptr if error occurred.
          */
         inline std::ofstream create_write_file(const std::string &fileName) {
-            std::ofstream file(fileName);
-            return file;
+            try {
+                std::ofstream file(fileName);
+                return file;
+            } catch (const std::exception &e) {
+                std::cerr << e.what() << "\n";
+            }
+            return nullptr;
         }
+
+#ifdef LIBIO_EXPERIMENTAL
+        /**
+         * Creates file for read and write.
+         * @param fileName name of the file, create if not exists.
+         * @param is_create create if not exist
+         * @return file handler.
+         */
+        inline std::ofstream create_write_file(const std::string &fileName, bool is_create) {
+            if (is_create and check_existance()) {
+                std::ofstream file(fileName);
+                return file;
+            }
+        }
+#endif
 
         /**
          * Read file line by line.
@@ -800,7 +792,6 @@ export void print_one_element(const int *array, const int i) {
             return out;
         }
 
-#define LIBIO_EXPERIMENTAL
 #ifdef LIBIO_EXPERIMENTAL
         /**
         * Open file and return condition variable of open
@@ -811,7 +802,7 @@ export void print_one_element(const int *array, const int i) {
             if (auto file = std::ifstream(file_name); file.is_open()) {
                 return std::make_tuple<std::ifstream, bool>(std::move(file), true);
             } else {
-                throw;
+                return std::make_tuple<std::ifstream, bool>(std::move(nullptr), false);
             }
         }
 
@@ -828,44 +819,42 @@ export void print_one_element(const int *array, const int i) {
             file.close();
             return false;
         }
-#undef LIBIO_EXPERIMENTAL
+
 #endif
 
 #ifdef LIBIO_EXPERIMENTAL
-    /**
-     * Function for receiving few lines from file.
-     * @tparam T generic type.
-     * @param fileName name of the file.
-     * @param count how many lines to get.
-     * @return vector with string values.
-     */
-    template<typename T>
-    std::vector<T> getFewLinesFrom(const std::string &fileName, const int count) {
-        std::ifstream file(fileName);
-        auto lines = std::vector<T>();
-        int inner_counter = 0;
-        std::string line;
-        while (std::getline(file, line)) {
-            ++inner_counter;
-            if (inner_counter == count) {
-                break;
+        /**
+         * Function for receiving few lines from file.
+         * @tparam T generic type.
+         * @param fileName name of the file.
+         * @param count how many lines to get.
+         * @return vector with string values.
+         */
+        template<typename T>
+        std::vector<T> getFewLinesFrom(const std::string &fileName, const int count) {
+            std::ifstream file(fileName);
+            auto          lines         = std::vector<T>();
+            int           inner_counter = 0;
+            std::string   line;
+            while (std::getline(file, line)) {
+                ++inner_counter;
+                if (inner_counter == count) {
+                    break;
+                }
+                lines.emplace_back(line);
             }
-            lines.emplace_back(line);
+            return lines;
         }
-        return lines;
-    }
-
-    /**
-     * Platform independent filepath getter.
-     * @deprecated because crashes program due to strange path get.
-     * @return string value of current path
-     */
-    inline std::string getCwd() {
-        const std::filesystem::path currentPath = std::filesystem::current_path();
-        return currentPath.string();
-    }
 
 #endif
+
+        /**
+         * Platform independent filepath getter.
+         * @return string value of current path
+         */
+        std::string get_current_dir_name(const std::string &optional_file_name = "") {
+            return std::filesystem::current_path().string() + "/" + optional_file_name;
+        }
     }
 
     /**
@@ -883,12 +872,12 @@ export void print_one_element(const int *array, const int i) {
          * Methods of sql execution
          */
         struct Sql_methods {
-            static libio::String SELECT;
-            static libio::String DELETE;
-            static libio::String UPDATE;
-            static libio::String INSERT;
-            static libio::String CREATE;
-            static libio::String DROP;
+            static String SELECT;
+            static String DELETE;
+            static String UPDATE;
+            static String INSERT;
+            static String CREATE;
+            static String DROP;
         };
 
         String Sql_methods::SELECT = "SELECT";
@@ -902,24 +891,24 @@ export void print_one_element(const int *array, const int i) {
             //
         };
 #ifdef LIBIO_EXPERIMENTAL
-    void create_connection(const std::string& database_name) {
-        //
-    }
+        void create_connection(const std::string &database_name) {
+            //
+        }
 
-    void close_connection(const std::string& database_name) {
-        //
-    }
+        void close_connection(const std::string &database_name) {
+            //
+        }
 #endif
     }
 
 #ifdef LIBIO_EXPERIMENTAL
 #pragma message("Using libio assembler functions")
-/**
- * Namespace for inline assembler code and other
- */
-namespace other {
-    extern "C" int func(int x);
-    asm(R"(
+    /**
+     * Namespace for inline assembler code and other
+     */
+    namespace other {
+        extern "C" int func(int x);
+        asm(R"(
         .globl func
         .type func, @function
         func:
@@ -929,7 +918,7 @@ namespace other {
         ret
         .cfi_endproc
     )");
-}
+    }
 #endif
 
     /**
@@ -961,5 +950,67 @@ namespace other {
             }
             throw;
         }
+
+        template<typename T>
+        T convert_to_t(const std::string &source);
+
+        template<>
+        int convert_to_t(const std::string &source) {
+            try {
+                return std::stoi(source);
+            } catch (const std::exception &e) {
+                throw std::runtime_error("Cannot convert string to '" + source + "' in int " + e.what());
+            }
+        }
+
+        template<>
+        std::string convert_to_t(const std::string &source) {
+            return source.empty() ? "0" : source;
+        }
+
+        template<>
+        bool convert_to_t(const std::string &source) {
+            if (source == "false" || source == "False") {
+                return false;
+            }
+            if (source == "true" || source == "True") {
+                return true;
+            }
+            return false;
+        }
+
+#ifdef LIBIO_EXPERIMENTAL
+        template<>
+        int conver_to_t(const std::string &str) {
+            if (!str) {
+                return 0;
+            }
+
+            int sign = 1;
+            int i = 0;
+
+            while (str[i] == ' ') {
+                i++;
+            }
+
+            if (str[i] == '-' || str[i] == '+') {
+                sign = (str[i++] == '-') ? -1 : 1;
+            }
+
+            while (str[i] >= '0' && str[i] <= '9') {
+                result = result * 10 + (str[i++] - '0');
+
+                if (result * sign > std::numeric_limits<int>::max()) {
+                    return std::numeric_limits<int>::max();
+                }
+                if (result * sign < std::numeric_limits<int>::min()) {
+                    return std::numeric_limits<int>::min();
+                }
+            }
+
+            return static_cast<int>(result * sign);
+        }
+
+#endif
     }
 }

@@ -63,7 +63,6 @@ endif ()
 
 add_executable(Edge_detector
         main.cpp
-        core/modulus/libio.cppm
         edge_detector.ui
 )
 
@@ -101,8 +100,8 @@ if (WIN32)
     )
 endif ()
 
-target_sources(Edge_detector
+target_sources(<Project name>
         PUBLIC
         FILE_SET all_my_modules TYPE CXX_MODULES FILES
-        core/modulus/libio.cppm
+        libio.cppm
 )
