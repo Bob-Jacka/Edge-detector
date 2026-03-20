@@ -31,13 +31,6 @@ if (WIN32)
             GIT_TAG v6.10.2
     )
 
-    message("Declare qt shaders dependency")
-    FetchContent_Declare(
-            qtshadertools
-            GIT_REPOSITORY https://github.com/qt/qtshadertools
-            GIT_TAG v6.10.2
-    )
-
     message("Declare qt multimedia dependency")
     FetchContent_Declare(
             qtmultimedia
@@ -64,12 +57,13 @@ endif ()
 add_executable(Edge_detector
         main.cpp
         edge_detector.ui
+
+        libio.cppm
 )
 
 if (WIN32)
     FetchContent_MakeAvailable(opencv)
     FetchContent_MakeAvailable(qtbase)
-    FetchContent_MakeAvailable(qtshadertools)
     FetchContent_MakeAvailable(qtmultimedia)
 endif ()
 
@@ -94,13 +88,15 @@ if (WIN32)
     target_link_libraries(Edge_detector
             PRIVATE
             qtbase
-            qtshadertools
             qtmultimedia
-            opencv
+
+            opencv_core
+            opencv_imgproc
+            opencv_highgui
     )
 endif ()
 
-target_sources(<Project name>
+target_sources(Edge_detector
         PUBLIC
         FILE_SET all_my_modules TYPE CXX_MODULES FILES
         libio.cppm

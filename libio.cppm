@@ -2,16 +2,18 @@ module;
 
 /**
  Custom library for actions in Netology C++ course and later for more serious projects.
- Version - 1.24.6
+ Version - 1.24.9
  This library could be a module, but yes, later rewritten to module with LIBIO_EXPERIMENTAL functions.
  Some kind of Boost library for poor people.
 
  You can connect module file by writing:
+
  target_sources(<Project name>
         PUBLIC
         FILE_SET all_my_modules TYPE CXX_MODULES FILES
         libio.cppm
 )
+
  In your cmake file
 */
 
@@ -29,6 +31,7 @@ module;
 // #define UNSTABLE //turns on unstable versions of very popular functions
 // #define LIBIO_WIDE_STRING //functionality to use wide strings
 // #define LIBIO_DEPRECATED //deprecated features in libio
+// #define LIBIO_ERROR //turn on errors in functions if defined and just write to std::cerr if not
 
 #ifdef LIBIO_EXPERIMENTAL ///define functions and include other libraries if LIBIO_EXPERIMENTAL tag is defined
 #pragma message("Using experimental features")
@@ -50,14 +53,18 @@ export module Libio;
     libio::input::user_input(val);\
     libio::output::println(); //just new line symbol
 
+#define REPEAT_FOREVER while(true)
+
 /**
  * Unified namespace for libio library for input/output.
  */
 namespace libio {
-    using cint [[maybe_unused]]                  = const int;  ///constant custom integer type
-    using cbool [[maybe_unused]]                 = const bool; ///constant custom bool type
-    export using String_con_ref [[maybe_unused]] = const std::string &;
-    export using String [[maybe_unused]]         = std::string;
+    namespace types {
+        using cint [[maybe_unused]]                  = const int;  ///constant custom integer type
+        using cbool [[maybe_unused]]                 = const bool; ///constant custom bool type
+        export using String_con_ref [[maybe_unused]] = const std::string &;
+        export using String [[maybe_unused]]         = std::string;
+    }
 
     /**
      * Namespace for constrains of types using concepts
@@ -130,6 +137,11 @@ namespace libio {
                 if (std::cout.good()) {
                     std::cout << color << object << Ansi_colors::_clear_color << separator;
                 }
+#ifdef LIBIO_ERROR
+                throw std::runtime_error("Colored print is failed");
+#else
+                std::cerr << "colored print is failed" << std::endl;
+#endif
             }
 
             template<typename T>
@@ -138,33 +150,38 @@ namespace libio {
                 if (std::cout.good()) {
                     std::cout << color << object << Ansi_colors::_clear_color << "\n";
                 }
+#ifdef LIBIO_ERROR
+                throw std::runtime_error("Colored println is failed");
+#else
+                std::cerr << "Colored println is failed" << std::endl;
+#endif
             }
         }
 
 #ifdef UNSTABLE
 #warning "Using unstable functions in libio, be careful"
-/**
- * Print given generic message in console with new line. By default, equal to "".
- * @warning If using C++23 - use std::println.
- * @param str string to output
- * @tparam T generic parameter of type to console print
- */
-export template<typename T = std::string>
-void println(const T &str = "\n") {
-    std::cout << str << std::endl;
-}
+        /**
+         * Print given generic message in console with new line. By default, equal to "".
+         * @warning If using C++23 - use std::println.
+         * @param str string to output
+         * @tparam T generic parameter of type to console print
+         */
+        export template<typename T = std::string>
+        void println(const T &str = "\n") {
+            std::cout << str << std::endl;
+        }
 
-/**
- * Print given generic message in console without new line.
- * @warning If using C++23 - use std::print.
- * @tparam T generic type
- * @param str string to output
- * @param separator text separator
- */
-export template<typename T>
-void print(const T &str, std::string separator = "") {
-    std::cout << str << separator;
-}
+        /**
+         * Print given generic message in console without new line.
+         * @warning If using C++23 - use std::print.
+         * @tparam T generic type
+         * @param str string to output
+         * @param separator text separator
+         */
+        export template<typename T>
+        void print(const T &str, std::string separator = "") {
+            std::cout << str << separator;
+        }
 
 #elifndef UNSTABLE
 
@@ -179,6 +196,11 @@ void print(const T &str, std::string separator = "") {
             if (std::cout.good()) {
                 std::cout << str << std::endl;
             }
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("Println is failed due to cout");
+#else
+            std::cerr << "Println is failed due to cout" << std::endl;
+#endif
         }
 
         /**
@@ -193,6 +215,11 @@ void print(const T &str, std::string separator = "") {
             if (std::cout.good()) {
                 std::cout << str << separator;
             }
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("Print is failed due to cout");
+#else
+            std::cerr << "Print is failed due to cout" << std::endl;
+#endif
         }
 
 #endif
@@ -223,6 +250,11 @@ void print(const T &str, std::string separator = "") {
             if (std::wcout.good()) {
                 std::wcout << str << std::endl;
             }
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("Println_w is failed due to wcout");
+#else
+            std::cerr << "Println_w is failed due to wcout" << std::endl;
+#endif
         }
 
         /**
@@ -235,6 +267,11 @@ void print(const T &str, std::string separator = "") {
             if (std::wcout.good()) {
                 std::wcout << str << separator;
             }
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("Print_w is failed due to wcout");
+#else
+            std::cerr << "Print_w is failed due to wcout" << std::endl;
+#endif
         }
 #endif
 
@@ -338,41 +375,41 @@ void print(const T &str, std::string separator = "") {
         }
 
 #ifdef LIBIO_EXPERIMENTAL
-/**
-* Print pyramid object one line by line
-* @param array
-* @param n
-*/
-export void print_pyramid(const int *array, const int n) {
-    for (int i = 0; i < n; ++i) {
-        const int level = (i == 0) ? 0 : static_cast<int>(std::floor(std::log2(static_cast<double>(i + 1))));
+        /**
+        * Print pyramid object one line by line
+        * @param array
+        * @param n
+        */
+        export void print_pyramid(const int *array, const int n) {
+            for (int i = 0; i < n; ++i) {
+                const int level = (i == 0) ? 0 : static_cast<int>(std::floor(std::log2(static_cast<double>(i + 1))));
 
-        if (i == 0) {
-            std::cout << level << " root " << array[i] << '\n';
-        } else {
-            const int p = (i - 1) / 2;
-            const char *side = (i == 2 * p + 1) ? "left" : "right";
-            std::cout << level << " " << side << " (" << array[p] << ") " << array[i] << '\n';
+                if (i == 0) {
+                    std::cout << level << " root " << array[i] << '\n';
+                } else {
+                    const int   p    = (i - 1) / 2;
+                    const char *side = (i == 2 * p + 1) ? "left" : "right";
+                    std::cout << level << " " << side << " (" << array[p] << ") " << array[i] << '\n';
+                }
+            }
         }
-    }
-}
 
-/**
- *
- * @param array pyramid object in array
- * @param i
- */
-export void print_one_element(const int *array, const int i) {
-    const int level = (i == 0) ? 0 : static_cast<int>(std::floor(std::log2(static_cast<double>(i + 1))));
+        /**
+         *
+         * @param array pyramid object in array
+         * @param i
+         */
+        export void print_one_element(const int *array, const int i) {
+            const int level = (i == 0) ? 0 : static_cast<int>(std::floor(std::log2(static_cast<double>(i + 1))));
 
-    if (i == 0) {
-        std::cout << level << " root " << array[i] << '\n';
-    } else {
-        const int p = (i - 1) / 2;
-        const char *side = (i == 2 * p + 1) ? "left" : "right";
-        std::cout << level << " " << side << " (" << array[p] << ") " << array[i] << '\n';
-    }
-}
+            if (i == 0) {
+                std::cout << level << " root " << array[i] << '\n';
+            } else {
+                const int   p    = (i - 1) / 2;
+                const char *side = (i == 2 * p + 1) ? "left" : "right";
+                std::cout << level << " " << side << " (" << array[p] << ") " << array[i] << '\n';
+            }
+        }
 
 #endif
     }
@@ -484,7 +521,9 @@ export void print_one_element(const int *array, const int i) {
                 elems.push_back(secondPart);
                 return elems;
             }
+#ifdef LIBIO_ERROR
             throw std::runtime_error("split_by_first_delim: delimiter not found");
+#endif
         }
 
         /**
@@ -502,12 +541,12 @@ export void print_one_element(const int *array, const int i) {
         }
 
 #ifdef LIBIO_EXPERIMENTAL
-    /**
-     * Replace string with another string
-     */
-    inline std::string replace(const std::string &str, const std::string &replace, const std::string &with) {
-        //
-    }
+        /**
+         * Replace string with another string
+         */
+        inline std::string replace(const std::string &str, const std::string &replace, const std::string &with) {
+            //
+        }
 #endif
     }
 
@@ -517,35 +556,45 @@ export void print_one_element(const int *array, const int i) {
     export namespace input {
 #ifdef LIBIO_DEPRECATED
 #warning "Using deprecated libio features"
-    /**
-     * Writes down int value into variable by address
-     * @param variableAddress address of variable to output data to it.
-     */
-    inline void int_user_input(int &variableAddress) {
-        if (std::cin.good()) {
-            std::cin >> variableAddress;
-        }
-    }
 
-    /**
-     * Writes down long value into variable by address
-     * @param variableAddress address of variable to output data to it.
-     */
-    inline void long_user_input(long &variableAddress) {
-        if (std::cin.good()) {
-            std::cin >> variableAddress;
+        /**
+         * Writes down int value into variable by address
+         * @param variableAddress address of variable to output data to it.
+         */
+        inline void int_user_input(int &variableAddress) {
+            if (std::cin.good()) {
+                std::cin >> variableAddress;
+            }
+#ifdef LIBIO_ERROR
+        throw std::runtime_error ("split_by_first_delim: delimiter not found");
+#endif
         }
-    }
 
-    /**
-     * Writes down string into variable by address
-     * @param variableAddress address of variable to output data to it.
-     */
-    inline void string_user_input(std::string &variableAddress) {
-        if (std::cin.good()) {
-            std::cin >> variableAddress;
+        /**
+         * Writes down long value into variable by address
+         * @param variableAddress address of variable to output data to it.
+         */
+        inline void long_user_input(long &variableAddress) {
+            if (std::cin.good()) {
+                std::cin >> variableAddress;
+            }
+#ifdef LIBIO_ERROR
+        throw std::runtime_error ("split_by_first_delim: delimiter not found");
+#endif
         }
-    }
+
+        /**
+         * Writes down string into variable by address
+         * @param variableAddress address of variable to output data to it.
+         */
+        inline void string_user_input(std::string &variableAddress) {
+            if (std::cin.good()) {
+                std::cin >> variableAddress;
+            }
+#ifdef LIBIO_ERROR
+        throw std::runtime_error ("split_by_first_delim: delimiter not found");
+#endif
+        }
 #endif
         /**
          * Writes down value into variable by address.
@@ -557,6 +606,11 @@ export void print_one_element(const int *array, const int i) {
             if (std::cin.good()) {
                 std::cin >> variableAddress;
             }
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("split_by_first_delim: delimiter not found");
+#else
+            std::cerr << "split_by_first_delim: delimiter not found" << std::endl;
+#endif
         }
 
         /**
@@ -570,10 +624,16 @@ export void print_one_element(const int *array, const int i) {
             if (std::cin.good()) {
                 std::cin >> variable;
             }
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("split_by_first_delim: delimiter not found");
+#else
+            std::cerr << "User input is failed" << std::endl;
+#endif
             return variable;
         }
 
         /**
+         * Input symbols (strings) in line
          * @param input_symbol symbol that appear in start of inputting
          * @return user string
          */
@@ -675,41 +735,45 @@ export void print_one_element(const int *array, const int i) {
         }
 
 #ifdef LIBIO_EXPERIMENTAL
-    /**
-     *
-     * @tparam T generic type
-     * @param sizes
-     * @return
-     */
-    template<typename T>
-    std::vector<T> create_ndim_array(const std::vector<size_t> &sizes) {
-        if (sizes.empty())
-            return std::vector<T>();
+        /**
+         *
+         * @tparam T generic type
+         * @param sizes
+         * @return
+         */
+        template<typename T>
+        std::vector<T> create_ndim_array(const std::vector<size_t> &sizes) {
+            if (sizes.empty())
+                return std::vector<T>();
 
-        std::vector<T> flat;
-        if (sizes.size() == 1) {
-            return std::vector<T>(sizes[0]);
-        }
-        if (sizes.size() == 2) {
-            std::vector<std::vector<T> > result(sizes[0], std::vector<T>(sizes[1]));
-            return result;
-        }
-        return;
-    }
-
-    std::tuple<int *, int, int> increase_dynamic_array(int *arr, int logical_size, int actual_size) {
-        if (arr != nullptr) {
-            actual_size *= 2;
-            auto new_arr = new int[actual_size];
-            for (int i = 0; i < logical_size; ++i) {
-                new_arr[i] = arr[i];
+            std::vector<T> flat;
+            if (sizes.size() == 1) {
+                return std::vector<T>(sizes[0]);
             }
-            delete[] arr;
-            return {new_arr, logical_size, actual_size};
+            if (sizes.size() == 2) {
+                std::vector<std::vector<T> > result(sizes[0], std::vector<T>(sizes[1]));
+                return result;
+            }
+            return;
         }
-        std::cerr << "Ошибка! Невозможно выделить дополнительную память для массива" << "\n";
+
+        std::tuple<int *, int, int> increase_dynamic_array(int *arr, int logical_size, int actual_size) {
+            if (arr != nullptr) {
+                actual_size  *= 2;
+                auto new_arr = new int[actual_size];
+                for (int i = 0; i < logical_size; ++i) {
+                    new_arr[i] = arr[i];
+                }
+                delete[] arr;
+                return {new_arr, logical_size, actual_size};
+            }
+#ifdef LIBIO_ERROR
+        throw std::runtime_error ("Cannot allocate memory for array");
+#else
+        std::cerr<< "Cannot allocate memory for array" << std::endl;
+#endif
         throw;
-    }
+        }
 #endif
     }
     /**
@@ -762,7 +826,11 @@ export void print_one_element(const int *array, const int i) {
                 file.close();
                 return lines;
             }
-            std::cerr << "Error reading file " << fileName << std::endl;
+#ifdef LIBIO_ERROR
+            throw std::runtime_error("Error reading file: " + fileName);
+#else
+            std::cerr << "Error reading file: " << fileName << std::endl;
+#endif
             return {};
         }
 
@@ -831,7 +899,7 @@ export void print_one_element(const int *array, const int i) {
          * @return vector with string values.
          */
         template<typename T>
-        std::vector<T> getFewLinesFrom(const std::string &fileName, const int count) {
+        std::vector<T> get_few_lines_from(const std::string &fileName, const int count) {
             std::ifstream file(fileName);
             auto          lines         = std::vector<T>();
             int           inner_counter = 0;
@@ -850,10 +918,15 @@ export void print_one_element(const int *array, const int i) {
 
         /**
          * Platform independent filepath getter.
+         * @param optional_file_name
          * @return string value of current path
          */
         std::string get_current_dir_name(const std::string &optional_file_name = "") {
-            return std::filesystem::current_path().string() + "/" + optional_file_name;
+            auto res = std::filesystem::current_path().string();
+            if (optional_file_name != "") {
+                res += "/" + optional_file_name;
+            }
+            return res;
         }
     }
 
@@ -890,6 +963,7 @@ export void print_one_element(const int *array, const int i) {
         enum DATABASE_TYPE {
             //
         };
+
 #ifdef LIBIO_EXPERIMENTAL
         void create_connection(const std::string &database_name) {
             //
@@ -959,7 +1033,12 @@ export void print_one_element(const int *array, const int i) {
             try {
                 return std::stoi(source);
             } catch (const std::exception &e) {
+#ifdef LIBIO_ERROR
                 throw std::runtime_error("Cannot convert string to '" + source + "' in int " + e.what());
+#else
+                std::cerr << "split_by_first_delim: delimiter not found" << std::endl;
+                return -1;
+#endif
             }
         }
 
@@ -987,7 +1066,7 @@ export void print_one_element(const int *array, const int i) {
             }
 
             int sign = 1;
-            int i = 0;
+            int i    = 0;
 
             while (str[i] == ' ') {
                 i++;
@@ -1000,10 +1079,16 @@ export void print_one_element(const int *array, const int i) {
             while (str[i] >= '0' && str[i] <= '9') {
                 result = result * 10 + (str[i++] - '0');
 
-                if (result * sign > std::numeric_limits<int>::max()) {
+                if (result *sign
+
+
+
+                >
+                std::numeric_limits<int>::max()
+                ) {
                     return std::numeric_limits<int>::max();
                 }
-                if (result * sign < std::numeric_limits<int>::min()) {
+                if (result *sign<std::numeric_limits<int>::min()) {
                     return std::numeric_limits<int>::min();
                 }
             }

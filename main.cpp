@@ -20,9 +20,9 @@
 #include <opencv2/tracking.hpp>
 
 #ifdef WIN32
-constexpr auto path_to_img = "";
+constexpr auto path_to_ui = "C:/Users/user/Downloads/Edge-detector/edge_detector.ui";
 #elifdef linux
-constexpr auto path_to_img = "/home/kirill/Downloads/Edge-detector/edge_detector.ui";
+constexpr auto path_to_ui = "/home/kirill/Downloads/Edge-detector/edge_detector.ui";
 #else
 #error("No specified OS")
 #endif
@@ -79,7 +79,7 @@ namespace Img_detect {
     /**
      * Draw bounding box with label
      * @param frame current frame
-     * @param bbox
+     * @param bbox bounding box on frame
      * @param ok is tracking ok
      */
     void draw_bb(cv::Mat &frame, const cv::Rect &bbox, const bool ok) {
@@ -121,14 +121,14 @@ namespace Img_detect {
 
         cv::Mat frame;
 
-        while (true) {
+        REPEAT_FOREVER{
             bool success = cap.read(frame);
             if (!success) {
                 libio::output::println("Video has ended");
                 break;
             }
 
-            cv::imshow("Video", frame);
+            cv::imshow("Video frame, press ESC to exit", frame);
 
             if (cv::waitKey(1) == 27) {
                 break;
@@ -137,7 +137,6 @@ namespace Img_detect {
 
         cap.release();
         cv::destroyAllWindows();
-        return 0;
     }
 }
 
@@ -151,7 +150,7 @@ int main(int argc, char *argv[]) {
             libio::output::println(elem);
         }
     }
-    QFile file(path_to_img); //absolute path to file with ui
+    QFile file(path_to_ui); //absolute path to file with ui
     auto  res = file.open(QFile::ReadOnly);
     if (not res) {
         QMessageBox(QMessageBox::Icon::Critical, "Error", "An error occurred during loading UI file").exec();
