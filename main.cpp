@@ -1,190 +1,173 @@
-#include <memory>
-#include <string>
+/********************************************************************************
+** Form generated from reading UI file 'edge_detectorgxFEOb.ui'
+**
+** Created by: Qt User Interface Compiler version 6.10.2
+**
+** WARNING! All changes made in this file will be lost when recompiling UI file!
+********************************************************************************/
 
-#include <QApplication>
-#include <QFile>
+#ifndef EDGE_DETECTORGXFEOB_H
+#define EDGE_DETECTORGXFEOB_H
+
+#include <QtMultimediaWidgets/QVideoWidget>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QFrame>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenuBar>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QStatusBar>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QWidget>
 #include <QFileDialog>
-#include <QMainWindow>
 #include <QMediaPlayer>
 #include <QMessageBox>
-#include <QPushButton>
-#include <QVideoWidget>
 #include <QWindow>
-#include <QtUiTools/QUiLoader>
+#include "Edger.hpp"
 
-#include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/opencv.hpp>
-#include <opencv2/tracking.hpp>
+QT_BEGIN_NAMESPACE
 
-#ifdef WIN32
-constexpr auto path_to_ui = "C:/Users/user/Downloads/Edge-detector/edge_detector.ui";
-#elifdef linux
-constexpr auto path_to_ui = "/home/kirill/Downloads/Edge-detector/edge_detector.ui";
-#else
-#error("No specified OS")
-#endif
+class Ui_MainWindow {
+public:
+    QWidget *centralwidget;
+    QWidget *verticalLayoutWidget;
+    QVBoxLayout *buttons;
+    QPushButton *open_vid_btn;
+    QPushButton *play_vid_btn;
+    QPushButton *detect_btn;
+    QPushButton *track_btn;
+    QPushButton *stop_btn;
+    QPushButton *settings_btn;
+    QFrame *frame;
+    QVideoWidget *video_wid;
+    QMenuBar *menubar;
+    QStatusBar *statusbar;
 
-import Libio;
+    void setupUi(QMainWindow *MainWindow) {
+        if (MainWindow->objectName().isEmpty()) {
+            MainWindow->setObjectName("MainWindow");
+        }
+        MainWindow->resize(964, 578);
+        centralwidget = new QWidget(MainWindow);
+        centralwidget->setObjectName("centralwidget");
+        verticalLayoutWidget = new QWidget(centralwidget);
+        verticalLayoutWidget->setObjectName("verticalLayoutWidget");
+        verticalLayoutWidget->setGeometry(QRect(780, 19, 160, 227));
+        buttons = new QVBoxLayout(verticalLayoutWidget);
+        buttons->setSpacing(0);
+        buttons->setObjectName("buttons");
+        buttons->setSizeConstraint(QLayout::SizeConstraint::SetDefaultConstraint);
+        buttons->setContentsMargins(0, 0, 0, 0);
 
-namespace Img_detect {
-    struct Cv_entity {
-        std::string file_name;
+        open_vid_btn = new QPushButton(verticalLayoutWidget);
+        open_vid_btn->setObjectName("open_vid_btn");
+        buttons->addWidget(open_vid_btn);
+
+        play_vid_btn = new QPushButton(verticalLayoutWidget);
+        play_vid_btn->setObjectName("play_vid_btn");
+        play_vid_btn->setStyleSheet("background-color: #bab86c;"); //looks like green
+        buttons->addWidget(play_vid_btn);
+
+        stop_btn = new QPushButton(verticalLayoutWidget);
+        stop_btn->setObjectName("stop_btn");
+        stop_btn->setStyleSheet("background-color: #c6a664;"); //looks like red
+        buttons->addWidget(stop_btn);
+
+        detect_btn = new QPushButton(verticalLayoutWidget);
+        detect_btn->setObjectName("detect_btn");
+        buttons->addWidget(detect_btn);
+
+        track_btn = new QPushButton(verticalLayoutWidget);
+        track_btn->setObjectName("track_btn");
+        buttons->addWidget(track_btn);
+
+        settings_btn = new QPushButton(verticalLayoutWidget);
+        settings_btn->setObjectName("settings_btn");
+        buttons->addWidget(settings_btn);
+
+        frame = new QFrame(centralwidget);
+        frame->setObjectName("frame");
+        frame->setGeometry(QRect(20, 20, 741, 471));
+        frame->setFrameShape(QFrame::Shape::Box);
+        frame->setFrameShadow(QFrame::Shadow::Raised);
+        frame->setLineWidth(5);
+        frame->setMidLineWidth(0);
+        video_wid = new QVideoWidget(frame);
+        video_wid->setObjectName("video_wid");
+        video_wid->setGeometry(QRect(10, 10, 721, 451));
+        MainWindow->setCentralWidget(centralwidget);
+        menubar = new QMenuBar(MainWindow);
+        menubar->setObjectName("menubar");
+        menubar->setGeometry(QRect(0, 0, 964, 23));
+        MainWindow->setMenuBar(menubar);
+        statusbar = new QStatusBar(MainWindow);
+        statusbar->setObjectName("statusbar");
+        MainWindow->setStatusBar(statusbar);
+
+        retranslateUi(MainWindow);
+
+        QMetaObject::connectSlotsByName(MainWindow);
+    } // setupUi
+
+    void retranslateUi(QMainWindow *MainWindow) const {
+        MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
+        open_vid_btn->setText(QCoreApplication::translate("MainWindow", "Open video", nullptr));
+        play_vid_btn->setText(QCoreApplication::translate("MainWindow", "Play video", nullptr));
+        detect_btn->setText(QCoreApplication::translate("MainWindow", "Detect edges", nullptr));
+        track_btn->setText(QCoreApplication::translate("MainWindow", "Track object", nullptr));
+        stop_btn->setText(QCoreApplication::translate("MainWindow", "Stop video", nullptr));
+        settings_btn->setText(QCoreApplication::translate("MainWindow", "Settings", nullptr));
+    } // retranslateUi
+
+};
+
+namespace Ui {
+    class MainWindow : public Ui_MainWindow {
     };
+} // namespace Ui
 
-    /**
-     * Detect edges with Sobel algo
-     * @param img image to detect edges on
-     * @return
-     */
-    int detect_edges_sobel(const cv::Mat &img) {
-        if (img.empty()) {
-            return -1;
-        }
-
-        // 2. Convert to grayscale
-        cv::Mat gray;
-        cvtColor(img, gray, cv::COLOR_BGR2GRAY);
-
-        // 3. Blur to reduce noise
-        cv::Mat blurred;
-        GaussianBlur(gray, blurred, cv::Size(3, 3), 0);
-
-        // 4. Sobel X and Sobel Y (signed 16-bit)
-        cv::Mat gradX, gradY;
-        Sobel(blurred, gradX, CV_16S, 1, 0, 3);
-        Sobel(blurred, gradY, CV_16S, 0, 1, 3);
-
-        // 5. Convert to float for magnitude calculation
-        cv::Mat gradXf, gradYf;
-        gradX.convertTo(gradXf, CV_32F);
-        gradY.convertTo(gradYf, CV_32F);
-
-        // 6. Compute true gradient magnitude
-        cv::Mat mag;
-        magnitude(gradXf, gradYf, mag);
-
-        // 7. Convert to 8-bit for display
-        cv::Mat sobel;
-        mag.convertTo(sobel, CV_8U);
-
-        // 8. Show result
-        imshow("Sobel Magnitude", sobel);
-        cv::waitKey(0);
-        return 0;
-    }
-
-    /**
-     * Draw bounding box with label
-     * @param frame current frame
-     * @param bbox bounding box on frame
-     * @param ok is tracking ok
-     */
-    void draw_bb(cv::Mat &frame, const cv::Rect &bbox, const bool ok) {
-        if (ok) {
-            // draw green box
-            cv::rectangle(frame, bbox, cv::Scalar(0, 255, 0), 2);
-
-            // draw "Tracking" above the box
-            cv::putText(frame, "Tracking",
-                        cv::Point(bbox.x, bbox.y - 10),
-                        cv::FONT_HERSHEY_SIMPLEX, 0.7,
-                        cv::Scalar(0, 255, 0), 2);
-        } else {
-            // draw "Lost" above the last known box
-            cv::putText(frame, "Lost",
-                        cv::Point(bbox.x, bbox.y - 10),
-                        cv::FONT_HERSHEY_SIMPLEX, 0.7,
-                        cv::Scalar(0, 0, 255), 2);
-        }
-    }
-
-    /**
-     * Track object with tracker to track object within video
-     */
-    void track_object() {
-        //        auto tracker = cv::TrackerCSRT::create();
-    }
-
-    /**
-     * Can be used as a coroutine. Start main cycle of the opencv.
-     * @param file_name name of the file to analyze
-     */
-    void opencv_cycle(const std::string &file_name) {
-        cv::VideoCapture cap(file_name);
-        if (!cap.isOpened()) {
-            libio::output::println("Can not open video");
-            return -1;
-        }
-
-        cv::Mat frame;
-
-        REPEAT_FOREVER{
-            bool success = cap.read(frame);
-            if (!success) {
-                libio::output::println("Video has ended");
-                break;
-            }
-
-            cv::imshow("Video frame, press ESC to exit", frame);
-
-            if (cv::waitKey(1) == 27) {
-                break;
-            }
-        }
-
-        cap.release();
-        cv::destroyAllWindows();
-    }
-}
+QT_END_NAMESPACE
 
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);
 
-    QUiLoader loader;
-    if constexpr (true) {
-        auto widgets = loader.availableWidgets();
-        for (auto elem: widgets) {
-            libio::output::println(elem);
-        }
-    }
-    QFile file(path_to_ui); //absolute path to file with ui
-    auto  res = file.open(QFile::ReadOnly);
-    if (not res) {
-        QMessageBox(QMessageBox::Icon::Critical, "Error", "An error occurred during loading UI file").exec();
-    }
-    file.close();
+    auto window = std::make_unique<Ui::MainWindow>();
+    auto main_win = std::make_unique<QMainWindow>();
+    std::unique_ptr<cv::VideoCapture> video_capture;
 
-    QWidget *main_window  = dynamic_cast<QMainWindow *>(loader.load(&file));
-    auto     player       = std::make_unique<QMediaPlayer>(); //video or other media player
-    auto     vid_wid      = main_window->findChild<QVideoWidget *>("video_wid");
-    auto     open_vid     = main_window->findChild<QPushButton *>("open_vid_btn");
-    auto     play_vid     = main_window->findChild<QPushButton *>("play_vid_btn");
-    auto     detect_vid   = main_window->findChild<QPushButton *>("detect_btn");
-    auto     track_vid    = main_window->findChild<QPushButton *>("track_btn");
-    auto     stop_vid     = main_window->findChild<QPushButton *>("stop_btn");
-    auto     settings_vid = main_window->findChild<QPushButton *>("settings_btn");
+    window->setupUi(main_win.get());
 
-    QPushButton::connect(open_vid, &QPushButton::clicked, [&main_window, &player, &vid_wid] {
-        QString filename = QFileDialog::getOpenFileName(main_window, "Choose File");
+    auto player = std::make_unique<QMediaPlayer>(); //video or dynamic media player
+    auto vid_wid = main_win->findChild<QVideoWidget *>("video_wid");
+    auto open_vid = main_win->findChild<QPushButton *>("open_vid_btn");
+    auto play_vid = main_win->findChild<QPushButton *>("play_vid_btn");
+    auto detect_vid = main_win->findChild<QPushButton *>("detect_btn");
+    auto track_vid = main_win->findChild<QPushButton *>("track_btn");
+    auto stop_vid = main_win->findChild<QPushButton *>("stop_btn");
+    auto settings_vid = main_win->findChild<QPushButton *>("settings_btn");
+
+    QPushButton::connect(open_vid, &QPushButton::clicked, [&main_win, &player, &vid_wid, &video_capture] {
+        QString filename = QFileDialog::getOpenFileName(main_win.get(), "Choose File");
         if (filename.isEmpty()) {
-            return; //it can be an exception
+            return; //it can be an exception, but maybe memory leak
         }
         player->setSource(QUrl(filename));
-        player->setVideoOutput(vid_wid);
-
-        if (not player->hasVideo()) {
+        video_capture = std::make_unique<cv::VideoCapture>(filename.toStdString());
+        if (player->source().isEmpty()) {
             QMessageBox(QMessageBox::Icon::Warning, "Error", "An error occurred during video insert").exec();
         }
+        player->setVideoOutput(vid_wid);
     });
 
     QPushButton::connect(play_vid, &QPushButton::clicked, [&player, &vid_wid] {
         player->play();
         vid_wid->show();
+
+        if (not player->hasVideo()) {
+            QMessageBox(QMessageBox::Icon::Warning, "Warning", "Open video first").exec();
+        }
+
         if (not player->isPlaying()) {
-            QMessageBox(QMessageBox::Icon::Warning, "Error", "An error occurred during playing video").exec();
+            QMessageBox(QMessageBox::Icon::Warning, "Warning", "An error occurred during playing video").exec();
         }
     });
 
@@ -195,24 +178,35 @@ int main(int argc, char *argv[]) {
         }
     });
 
-    QPushButton::connect(detect_vid, &QPushButton::clicked, [&player] {
-        //Img_detect::detect_edges_sobel();
+    QPushButton::connect(detect_vid, &QPushButton::clicked, [&video_capture] {
+        cv::Mat frame;
+        bool success = video_capture->read(frame);
+        if (!success) {
+            libio::output::println("Video has ended");
+        }
+        Edger::detect_edges_sobel(frame);
     });
 
-    QPushButton::connect(track_vid, &QPushButton::clicked, [&player] {
-        //
+    QPushButton::connect(track_vid, &QPushButton::clicked, [&video_capture] {
+        cv::Mat frame;
+        bool success = video_capture->read(frame);
+        if (!success) {
+            libio::output::println("Video has ended");
+        }
+        Edger::track_object(frame);
     });
 
     QPushButton::connect(settings_vid, &QPushButton::clicked, [] {
-        const auto settings_page = new QWindow();
-        settings_page.show();
+        auto settings_page = new QWindow();
         sleep(1000);
         delete settings_page;
     });
 
-    if (main_window) {
-        main_window->show();
+    if (main_win) {
+        main_win->show();
     }
 
     return QApplication::exec();
 }
+
+#endif

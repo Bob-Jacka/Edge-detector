@@ -59,6 +59,9 @@ add_executable(Edge_detector
         edge_detector.ui
 
         libio.cppm
+        main.cpp
+        Edger.cpp
+        Edger.hpp
 )
 
 if (WIN32)
