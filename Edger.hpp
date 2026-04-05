@@ -10,7 +10,7 @@ import Libio;
 
 class Edger {
 public:
-    static void track_object(cv::Mat& img);
+    static void track_object(cv::VideoCapture* vid, cv::Mat &img);
 
     static void draw_bb(cv::Mat &frame, const cv::Rect &bbox, bool ok);
 

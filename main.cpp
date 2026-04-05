@@ -24,6 +24,9 @@
 #include <QWindow>
 #include "Edger.hpp"
 
+#define DEBUG //uncomment or comment
+#define GET_VID_POS ((static_cast<double>(player->position())))
+
 QT_BEGIN_NAMESPACE
 
 class Ui_MainWindow {
@@ -46,7 +49,8 @@ public:
         if (MainWindow->objectName().isEmpty()) {
             MainWindow->setObjectName("MainWindow");
         }
-        MainWindow->resize(964, 578);
+        MainWindow->resize(970, 580);
+        MainWindow->setFixedSize(970, 580); //do not resize window
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName("centralwidget");
         verticalLayoutWidget = new QWidget(centralwidget);
@@ -140,25 +144,34 @@ int main(int argc, char *argv[]) {
     auto vid_wid = main_win->findChild<QVideoWidget *>("video_wid");
     auto open_vid = main_win->findChild<QPushButton *>("open_vid_btn");
     auto play_vid = main_win->findChild<QPushButton *>("play_vid_btn");
-    auto detect_vid = main_win->findChild<QPushButton *>("detect_btn");
-    auto track_vid = main_win->findChild<QPushButton *>("track_btn");
-    auto stop_vid = main_win->findChild<QPushButton *>("stop_btn");
-    auto settings_vid = main_win->findChild<QPushButton *>("settings_btn");
+    auto detect_vid = main_win->findChild<QPushButton *>("detect_btn"); ///Detect edges in video
+    auto track_vid = main_win->findChild<QPushButton *>("track_btn"); ///Track object in video
+    auto stop_vid = main_win->findChild<QPushButton *>("stop_btn"); ///Stop video
+    auto settings_vid = main_win->findChild<QPushButton *>("settings_btn"); ///Open setting window
 
     QPushButton::connect(open_vid, &QPushButton::clicked, [&main_win, &player, &vid_wid, &video_capture] {
         QString filename = QFileDialog::getOpenFileName(main_win.get(), "Choose File");
+#ifdef DEBUG
+        printf("[DEBUG]: Given filename - %s\n", filename.toStdString().c_str());
+        printf("Is video seekable - %s\n", player->isSeekable() == 1 ? "true" : "false");
+#endif
         if (filename.isEmpty()) {
             return; //it can be an exception, but maybe memory leak
         }
         player->setSource(QUrl(filename));
         video_capture = std::make_unique<cv::VideoCapture>(filename.toStdString());
         if (player->source().isEmpty()) {
-            QMessageBox(QMessageBox::Icon::Warning, "Error", "An error occurred during video insert").exec();
+            QMessageBox(QMessageBox::Icon::Warning, "Warning", "An error occurred during video insert").exec();
         }
         player->setVideoOutput(vid_wid);
+        vid_wid->show();
     });
 
     QPushButton::connect(play_vid, &QPushButton::clicked, [&player, &vid_wid] {
+        if (player->isPlaying()) {
+            player->pause(); //unexpected feature
+            return;
+        }
         player->play();
         vid_wid->show();
 
@@ -172,33 +185,55 @@ int main(int argc, char *argv[]) {
     });
 
     QPushButton::connect(stop_vid, &QPushButton::clicked, [&player] {
-        player->stop();
-        if (player->mediaStatus() != QMediaPlayer::StalledMedia) {
-            QMessageBox(QMessageBox::Icon::Warning, "Error", "Video is not stopped").exec();
+        player->pause();
+        if (player->isPlaying()) {
+            QMessageBox(QMessageBox::Icon::Warning, "Warning", "Video is not stopped").exec();
         }
     });
 
-    QPushButton::connect(detect_vid, &QPushButton::clicked, [&video_capture] {
+    //For detecting edges in video
+    QPushButton::connect(detect_vid, &QPushButton::clicked, [&player, &video_capture] {
+        if (not player->hasVideo()) {
+            QMessageBox(QMessageBox::Icon::Critical, "Error", "Video is not turned on").exec();
+            return;
+        }
+
+        player->pause(); //stop video when detect
         cv::Mat frame;
+        video_capture->set(cv::CAP_PROP_POS_MSEC, GET_VID_POS);
+#ifdef DEBUG
+        printf("[Debug]: Video position in milliseconds - %f\n", GET_VID_POS);
+#endif
         bool success = video_capture->read(frame);
-        if (!success) {
+        if (not success) {
             libio::output::println("Video has ended");
         }
         Edger::detect_edges_sobel(frame);
     });
 
-    QPushButton::connect(track_vid, &QPushButton::clicked, [&video_capture] {
+    QPushButton::connect(track_vid, &QPushButton::clicked, [&player, &video_capture] {
+        if (not player->hasVideo()) {
+            QMessageBox(QMessageBox::Icon::Critical, "Error", "Video is not turned on").exec();
+            return;
+        }
+
+        player->pause(); //stop video when detect
         cv::Mat frame;
+        video_capture->set(cv::CAP_PROP_POS_MSEC, GET_VID_POS);
+#ifdef DEBUG
+        printf("[Debug]: Video position in milliseconds - %f\n", GET_VID_POS);
+#endif
         bool success = video_capture->read(frame);
         if (!success) {
             libio::output::println("Video has ended");
+            return;
         }
-        Edger::track_object(frame);
+        Edger::track_object(video_capture.get(), frame);
     });
 
     QPushButton::connect(settings_vid, &QPushButton::clicked, [] {
         auto settings_page = new QWindow();
-        sleep(1000);
+        sleep(10000);
         delete settings_page;
     });
 

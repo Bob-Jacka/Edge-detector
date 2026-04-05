@@ -60,6 +60,7 @@ add_executable(Edge_detector
 
         libio.cppm
         main.cpp
+
         Edger.cpp
         Edger.hpp
 )
@@ -83,6 +84,7 @@ if (UNIX)
             opencv_core
             opencv_imgproc
             opencv_highgui
+            opencv_tracking
     )
 endif ()
 

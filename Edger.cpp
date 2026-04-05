@@ -48,8 +48,8 @@ int Edger::detect_edges_sobel(const cv::Mat &img) {
  * @param bbox
  * @param ok is tracking ok
  */
-void Edger::draw_bb(cv::Mat &frame, const cv::Rect &bbox, const bool ok) {
-    if (ok) {
+void Edger::draw_bb(cv::Mat &frame, const cv::Rect &bbox, const bool is_ok) {
+    if (is_ok) {
         // draw green box
         cv::rectangle(frame, bbox, cv::Scalar(0, 255, 0), 2);
 
@@ -69,9 +69,31 @@ void Edger::draw_bb(cv::Mat &frame, const cv::Rect &bbox, const bool ok) {
 
 /**
  * Track object with tracker to track object within video
+ * @tparam T - tracker object
  */
-void Edger::track_object(cv::Mat &img) {
-//    auto tracker = cv::TrackerCSRT::create();
-//    auto bbox = cv::selectROI("", img);
-//    tracker->init(img, bbox);
+// template<typename T>
+void Edger::track_object(cv::VideoCapture *video_cap, cv::Mat &init_frame) {
+    auto tracker = cv::TrackerCSRT::create();
+    auto bbox = cv::selectROI("Select frame", init_frame);
+    tracker->init(init_frame, bbox);
+    cv::Mat tmp_frame;
+#ifdef DEBUG
+    printf("Tracker is inited\n");
+#endif
+    while (true) {
+        video_cap->read(tmp_frame);
+        draw_bb(tmp_frame, bbox, true);
+
+        if (tmp_frame.empty()) {
+            break;
+        }
+        cv::imshow("Select tracking area", tmp_frame);
+
+        int key = cv::waitKey(0);
+
+        // break the loop
+        if (key == 27) {
+            break;
+        }
+    }
 }
