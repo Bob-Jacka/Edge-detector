@@ -56,10 +56,6 @@ endif ()
 
 add_executable(Edge_detector
         main.cpp
-        edge_detector.ui
-
-        libio.cppm
-        main.cpp
 
         Edger.cpp
         Edger.hpp
@@ -100,9 +96,3 @@ if (WIN32)
             opencv_highgui
     )
 endif ()
-
-target_sources(Edge_detector
-        PUBLIC
-        FILE_SET all_my_modules TYPE CXX_MODULES FILES
-        libio.cppm
-)

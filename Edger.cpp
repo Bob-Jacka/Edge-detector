@@ -3,9 +3,10 @@
 /**
 * Detect edges with Sobel algo
 * @param img image to detect edges on
+* @tparam T - edge algorithm
 * @return None
 */
-int Edger::detect_edges_sobel(const cv::Mat &img) {
+int Edger::detect_edges(const cv::Mat &img) {
     if (img.empty()) {
         return -1;
     }
@@ -37,8 +38,10 @@ int Edger::detect_edges_sobel(const cv::Mat &img) {
     mag.convertTo(sobel, CV_8U);
 
     // 8. Show result
-    imshow("Sobel Magnitude", sobel);
-    cv::waitKey(0);
+    if (!sobel.empty()) {
+        imshow("Edges", sobel);
+        cv::waitKey(0); //wait for key or close by red cross
+    }
     return 0;
 }
 
@@ -58,42 +61,14 @@ void Edger::draw_bb(cv::Mat &frame, const cv::Rect &bbox, const bool is_ok) {
                     cv::Point(bbox.x, bbox.y - 10),
                     cv::FONT_HERSHEY_SIMPLEX, 0.7,
                     cv::Scalar(0, 255, 0), 2);
+        return;
+
     } else {
         // draw "Lost" above the last known box
         cv::putText(frame, "Lost",
                     cv::Point(bbox.x, bbox.y - 10),
                     cv::FONT_HERSHEY_SIMPLEX, 0.7,
                     cv::Scalar(0, 0, 255), 2);
-    }
-}
-
-/**
- * Track object with tracker to track object within video
- * @tparam T - tracker object
- */
-// template<typename T>
-void Edger::track_object(cv::VideoCapture *video_cap, cv::Mat &init_frame) {
-    auto tracker = cv::TrackerCSRT::create();
-    auto bbox = cv::selectROI("Select frame", init_frame);
-    tracker->init(init_frame, bbox);
-    cv::Mat tmp_frame;
-#ifdef DEBUG
-    printf("Tracker is inited\n");
-#endif
-    while (true) {
-        video_cap->read(tmp_frame);
-        draw_bb(tmp_frame, bbox, true);
-
-        if (tmp_frame.empty()) {
-            break;
-        }
-        cv::imshow("Select tracking area", tmp_frame);
-
-        int key = cv::waitKey(0);
-
-        // break the loop
-        if (key == 27) {
-            break;
-        }
+        return;
     }
 }

@@ -20,7 +20,7 @@
       <x>780</x>
       <y>19</y>
       <width>160</width>
-      <height>227</height>
+      <height>261</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="buttons">
@@ -69,6 +69,13 @@
       <widget class="QPushButton" name="settings_btn">
        <property name="text">
         <string>Settings</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="is_need_audio">
+       <property name="text">
+        <string>is need audio</string>
        </property>
       </widget>
      </item>
