@@ -17,7 +17,7 @@ int Edger::detect_edges(const cv::Mat &img) {
 
     // 3. Blur to reduce noise
     cv::Mat blurred;
-    GaussianBlur(gray, blurred, cv::Size(3, 3), 0);
+    cv::bilateralFilter(gray, blurred, 9, 75, 75);
 
     // 4. Sobel X and Sobel Y (signed 16-bit)
     cv::Mat gradX, gradY;

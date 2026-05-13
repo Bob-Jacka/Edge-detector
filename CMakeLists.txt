@@ -57,8 +57,9 @@ endif ()
 add_executable(Edge_detector
         main.cpp
 
-        Edger.cpp
-        Edger.hpp
+        core/functional/Edger.cpp
+        core/functional/Edger.hpp
+        core/entities/Interface.hpp
 )
 
 if (WIN32)
